@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Simple SVG sprite: custom, free-to-use vector icons used as placeholders -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="icon-grass" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="4" fill="#8fd36f"/>
+    <path d="M6 20c3-6 8-6 11 0 3-6 8-6 11 0" stroke="#57a844" stroke-width="1.6" fill="none"/>
+  </symbol>
+  <symbol id="icon-soil" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="4" fill="#c28b5a"/>
+    <rect x="4" y="18" width="24" height="8" fill="#8b5a3c" rx="2"/>
+  </symbol>
+  <symbol id="icon-water" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="4" fill="#89d3ff"/>
+    <path d="M4 20c4-6 8 0 12-4s8 4 12 0" stroke="#2f9bd8" stroke-width="1.6" fill="none"/>
+  </symbol>
+  <symbol id="icon-fence" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="4" fill="#ffdca8"/>
+    <path d="M6 10v12M12 6v16M18 8v14M24 9v13M4 14h24M4 20h24" stroke="#8b5a3c" stroke-width="1.8" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-path" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="4" fill="#d9c8b0"/>
+    <path d="M6 22c4-6 8-6 20-6" stroke="#b89a7b" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-tree" viewBox="0 0 32 32">
+    <rect width="32'" height="32'" fill="none"/>
+    <circle cx="16" cy="12" r="8" fill="#3a8b3a"/>
+    <rect x="14" y="18" width="4" height="8" fill="#7b4f2a" rx="1"/>
+  </symbol>
+  <symbol id="icon-seed" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="4" fill="#fff0c9"/>
+    <ellipse cx="16" cy="16" rx="6" ry="4" fill="#b4761f"/>
+  </symbol>
+  <symbol id="icon-crop-stage-0" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="4" fill="#c28b5a"/>
+    <path d="M16 20v-6l2 2" stroke="#2f7a2f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-crop-stage-1" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="4" fill="#9ed97b"/>
+    <path d="M12 18c2-3 6-3 8 0" stroke="#2f7a2f" stroke-width="2" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-crop-stage-2" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="4" fill="#6fcf5b"/>
+    <circle cx="16" cy="14" r="5" fill="#f5d16f"/>
+  </symbol>
+  <symbol id="icon-coin" viewBox="0 0 32 32">
+    <circle cx="16" cy="16" r="10" fill="#ffd700"/>
+    <text x="16" y="19" text-anchor="middle" font-size="10" fill="#b88600" font-family="sans-serif">¢</text>
+  </symbol>
+  <symbol id="icon-player" viewBox="0 0 32 32">
+    <circle cx="16" cy="10" r="4" fill="#ffddcc"/>
+    <rect x="12" y="14" width="8" height="10" fill="#6ea3d6" rx="2"/>
+  </symbol>
+  <symbol id="icon-lock" viewBox="0 0 32 32">
+    <rect x="8" y="12" width="16" height="12" rx="2" fill="#dfe6ee" stroke="#8b9aa8" stroke-width="1.4"/>
+    <path d="M12 12v-3a4 4 0 0 1 8 0v3" stroke="#8b9aa8" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  </symbol>
+</svg>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FarmVerse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <!-- include SVG sprite -->
+    <div id="svg-sprite-placeholder" style="display:none">
+      <!-- loaded via <object> below to keep file small on first paint -->
+      <!-- fallback: embed directly -->
+    </div>
+
+    <div id="loading-screen" class="overlay active">
+      <div class="loading-card">
+        <div class="logo">
+          <svg width="64" height="64"><use href="#icon-player"></use></svg>
+        </div>
+        <h2>FarmVerse</h2>
+        <p class="muted">Loading your cozy farm…</p>
+      </div>
+    </div>
+
+    <div id="game" class="game-root">
+      <header class="topbar">
+        <div class="left">
+          <div class="logo-small">
+            <svg width="28" height="28"><use href="#icon-player"></use></svg>
+            <span class="game-title">FarmVerse</span>
+          </div>
+        </div>
+        <div class="center">
+          <div class="xp-bar">
+            <div id="xp-fill" class="xp-fill"></div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="stat">
+            <svg class="icon"><use href="#icon-coin"></use></svg>
+            <span id="coins-count">0</span>
+          </div>
+          <div class="stat">
+            <svg class="icon"><use href="#icon-player"></use></svg>
+            <span id="player-level">Lv 1</span>
+          </div>
+          <div class="stat">
+            <button id="btn-settings" class="btn-icon">⚙️</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-area">
+        <section id="farm-area" class="farm-area">
+          <div id="crop-selector" class="crop-picker"></div>
+          <div id="farm" class="farm-grid"></div>
+        </section>
+
+        <aside id="ui-panels" class="ui-panels">
+          <div id="panel-inventory" class="panel popup hidden"></div>
+          <div id="panel-shop" class="panel popup hidden"></div>
+        </aside>
+      </main>
+
+      <nav class="toolbar bottom-toolbar">
+        <button class="tool" data-tool="hoe" title="Hoe">🪓</button>
+        <button class="tool" data-tool="plant" title="Plant">🌱</button>
+        <button class="tool" data-tool="water" title="Water">💧</button>
+        <button class="tool" data-tool="harvest" title="Harvest">🌾</button>
+        <button class="tool" data-tool="animals" id="open-animals" title="Animals">🐔</button>
+        <button class="tool" data-tool="buildings" id="open-buildings" title="Buildings">🏠</button>
+        <button class="tool" data-tool="inventory" id="open-inventory" title="Inventory">🎒</button>
+        <button class="tool" data-tool="market" id="open-market" title="Market">💱</button>
+      </nav>
+
+      <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script type="module" src="js/assets.js"></script>
+    <script type="module" src="js/grid.js"></script>
+    <script type="module" src="js/ui.js"></script>
+    <script type="module" src="js/game.js"></script>
+  </body>
+</html>
