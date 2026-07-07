@@ -1,6 +1,4 @@
-import { ASSETS } from './assets.js';
-
-const SAVE_KEY = 'farmverse-grid-v1';
+const GRID_SAVE_KEY = 'farmverse-grid-v1';
 
 export class Grid {
   constructor(cols=10, rows=10){
@@ -30,9 +28,9 @@ export class Grid {
 
   setTile(x,y,patch){ const t=this.getTile(x,y); if(!t) return; Object.assign(t,patch); this.save(); }
 
-  save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify({cols:this.cols,rows:this.rows,tiles:this.tiles})); }catch(e){} }
+  save(){ try{ localStorage.setItem(GRID_SAVE_KEY, JSON.stringify({cols:this.cols,rows:this.rows,tiles:this.tiles})); }catch(e){} }
 
-  load(){ try{ const raw = localStorage.getItem(SAVE_KEY); if(!raw) { this.initEmpty(); return; } const data=JSON.parse(raw); this.cols=data.cols||10; this.rows=data.rows||10; this.tiles=data.tiles || []; if(this.tiles.length!==this.cols*this.rows){ this.initEmpty(); } }catch(e){ this.initEmpty(); } }
+  load(){ try{ const raw = localStorage.getItem(GRID_SAVE_KEY); if(!raw) { this.initEmpty(); return; } const data=JSON.parse(raw); this.cols=data.cols||10; this.rows=data.rows||10; this.tiles=data.tiles || []; if(this.tiles.length!==this.cols*this.rows){ this.initEmpty(); } }catch(e){ this.initEmpty(); } }
 
 }
 
@@ -56,6 +54,9 @@ export function renderGrid(grid, container, onTileClick){
       cs.title = tile.content.crop;
       content.appendChild(cs);
     }
+    if (tile._anim === 'plant') content.classList.add('plant-anim');
+    if (tile._anim === 'harvest') content.classList.add('harvest-anim');
+    tile._anim = null;
     el.appendChild(bg); el.appendChild(content);
     el.addEventListener('click', ()=> onTileClick && onTileClick(tile, el));
     container.appendChild(el);

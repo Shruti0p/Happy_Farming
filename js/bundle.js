@@ -1,6 +1,196 @@
-import { loadSprites, ASSETS, BUILDINGS, ANIMALS, playBeep, setMuted, isMuted } from './assets.js';
-import { bindSettingsButton, bindToolbar, showToast, showPanel, closeAllPanels, setTopbar, hideLoading, spawnConfetti, animateCoin } from './ui.js';
-import { Grid, renderGrid } from './grid.js';
+// FarmVerse - Bundled Game Script
+// ============================================
+
+// assets.js - loads SVG sprite and provides simple sound placeholders
+function loadSprites() {
+  return fetch('assets/icons.svg').then(r => r.text()).then(svg => {
+    const div = document.createElement('div');
+    div.style.display = 'none';
+    div.innerHTML = svg;
+    document.body.appendChild(div);
+  }).catch(() => { /* ignore */ });
+}
+
+let audioCtx = null;
+let muted = false;
+function setMuted(v){ muted = !!v; try{ localStorage.setItem('farmverse-muted', muted? '1':'0'); }catch(e){} }
+function isMuted(){ return muted; }
+function playBeep(type = 'click'){
+  try{
+    if(muted) return;
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = type === 'click' ? 'square' : 'sine';
+    o.frequency.value = type === 'coin' ? 900 : 420;
+    g.gain.value = 0.06;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + 0.08);
+  }catch(e){/* audio blocked */}
+}
+
+// load persisted mute
+try{ const m = localStorage.getItem('farmverse-muted'); if(m==='1') muted = true; }catch(e){}
+
+const ASSETS = {
+  crops: {
+    wheat: { id: 'wheat', name: 'Wheat', icon: '🌾', seedPrice: 12, sellPrice: 18, growTime: 30, stages: 3 },
+    corn: { id: 'corn', name: 'Corn', icon: '🌽', seedPrice: 28, sellPrice: 36, growTime: 45, stages: 3, unlockLevel: 3 },
+    tomato: { id: 'tomato', name: 'Tomato', icon: '🍅', seedPrice: 42, sellPrice: 52, growTime: 55, stages: 3, unlockLevel: 4 },
+    potato: { id: 'potato', name: 'Potato', icon: '🥔', seedPrice: 56, sellPrice: 70, growTime: 65, stages: 3, unlockLevel: 5 },
+  },
+  products: [
+    { id: 'wheat', name: 'Wheat', icon: '🌾', sellPrice: 18 },
+    { id: 'corn', name: 'Corn', icon: '🌽', sellPrice: 36 },
+    { id: 'tomato', name: 'Tomato', icon: '🍅', sellPrice: 52 },
+    { id: 'potato', name: 'Potato', icon: '🥔', sellPrice: 70 },
+    { id: 'eggs', name: 'Eggs', icon: '🥚', sellPrice: 22 },
+    { id: 'milk', name: 'Milk', icon: '🥛', sellPrice: 36 },
+  ],
+};
+
+const BUILDINGS = [
+  { id: 'barn', name: 'Barn', price: 80, unlockLevel: 2, description: 'Allows you to house animals.', icon: '🏠' },
+  { id: 'greenhouse', name: 'Greenhouse', price: 150, unlockLevel: 4, description: 'Grow crops faster year-round.', icon: '🌿' },
+  { id: 'barnExpansion', name: 'Animal Pen', price: 220, unlockLevel: 6, description: 'Hold more animals and products.', icon: '🐄' },
+];
+
+const ANIMALS = [
+  { id: 'chicken', name: 'Chicken', price: 90, unlockLevel: 2, requirement: 'barn', icon: '🐔', description: 'Produces eggs over time.', productId: 'eggs', productName: 'Eggs', productIcon: '🥚', productSellPrice: 22, produceTime: 35 },
+  { id: 'cow', name: 'Cow', price: 180, unlockLevel: 5, requirement: 'barn', icon: '🐄', description: 'Produces milk over time.', productId: 'milk', productName: 'Milk', productIcon: '🥛', productSellPrice: 36, produceTime: 60 },
+];
+
+const GRID_SAVE_KEY = 'farmverse-grid-v1';
+
+class Grid {
+  constructor(cols=10, rows=10){
+    this.cols = cols; this.rows = rows;
+    this.tiles = []; // flattened array
+    this.load();
+  }
+
+  index(x,y){ return y*this.cols + x; }
+
+  initEmpty(){
+    this.tiles = [];
+    for(let y=0;y<this.rows;y++){
+      for(let x=0;x<this.cols;x++){
+        // simple procedural: put some water near edges and trees
+        let type = 'grass';
+        if(Math.random()<0.03) type='tree';
+        if(Math.random()<0.03) type='rock';
+        this.tiles.push({x,y,type,occupied:false,content:null});
+      }
+    }
+  }
+
+  ensureSize(cols,rows){ if(cols!==this.cols||rows!==this.rows){ this.cols=cols; this.rows=rows; this.initEmpty(); this.save(); }}
+
+  getTile(x,y){ if(x<0||y<0||x>=this.cols||y>=this.rows) return null; return this.tiles[this.index(x,y)]; }
+
+  setTile(x,y,patch){ const t=this.getTile(x,y); if(!t) return; Object.assign(t,patch); this.save(); }
+
+  save(){ try{ localStorage.setItem(GRID_SAVE_KEY, JSON.stringify({cols:this.cols,rows:this.rows,tiles:this.tiles})); }catch(e){} }
+
+  load(){ try{ const raw = localStorage.getItem(GRID_SAVE_KEY); if(!raw) { this.initEmpty(); return; } const data=JSON.parse(raw); this.cols=data.cols||10; this.rows=data.rows||10; this.tiles=data.tiles || []; if(this.tiles.length!==this.cols*this.rows){ this.initEmpty(); } }catch(e){ this.initEmpty(); } }
+
+}
+
+function renderGrid(grid, container, onTileClick){
+  container.innerHTML='';
+  container.style.gridTemplateColumns = `repeat(${grid.cols}, 64px)`;
+  for(const tile of grid.tiles){
+    const el = document.createElement('div'); el.className='farm-tile '+(tile.type||'grass');
+    el.dataset.x = tile.x; el.dataset.y = tile.y;
+    const bg = document.createElement('div'); bg.className='tile-bg';
+    const use = document.createElementNS('http://www.w3.org/2000/svg','svg'); use.classList.add('tile-svg'); use.setAttribute('width','32'); use.setAttribute('height','32');
+    const sym = {
+      grass: 'icon-grass', soil: 'icon-soil', water: 'icon-water', fence:'icon-fence', path:'icon-path', tree:'icon-tree'
+    }[tile.type] || 'icon-grass';
+    use.innerHTML = `<use href="#${sym}"></use>`;
+    bg.appendChild(use);
+    const content = document.createElement('div'); content.className='tile-content';
+    if(tile.content && tile.content.crop){
+      const stage = tile.content.stage||0;
+      const cs = document.createElement('div'); cs.className=`crop-stage stage-${stage}`;
+      cs.title = tile.content.crop;
+      content.appendChild(cs);
+    }
+    if (tile._anim === 'plant') content.classList.add('plant-anim');
+    if (tile._anim === 'harvest') content.classList.add('harvest-anim');
+    tile._anim = null;
+    el.appendChild(bg); el.appendChild(content);
+    el.addEventListener('click', ()=> onTileClick && onTileClick(tile, el));
+    container.appendChild(el);
+  }
+}
+
+let toastTimer = null;
+function showToast(text, timeout=2000){
+  const t = document.getElementById('toast'); if(!t) return;
+  t.textContent = text;
+  t.classList.add('visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove('visible'), timeout);
+}
+
+function bindToolbar(callback){
+  document.querySelectorAll('.bottom-toolbar .tool').forEach(btn => {
+    btn.addEventListener('click', ()=>{ playBeep('click'); callback(btn.dataset.tool); });
+  });
+}
+
+function showPanel(id, html){
+  const p = document.getElementById(id); if(!p) return;
+  p.innerHTML = html;
+  p.classList.toggle('hidden', !html);
+}
+
+function closeAllPanels(){
+  document.querySelectorAll('.panel.popup').forEach(p => p.classList.add('hidden'));
+}
+
+function setTopbar(coins, level, xpPct){
+  const c = document.getElementById('coins-count'); if(c) c.textContent = coins;
+  const lv = document.getElementById('player-level'); if(lv) lv.textContent = `Lv ${level}`;
+  const xp = document.getElementById('xp-fill'); if(xp) xp.style.width = (Math.max(0, Math.min(100,xpPct*100))) + '%';
+}
+
+function hideLoading(){ document.getElementById('loading-screen').classList.remove('active'); document.getElementById('loading-screen').classList.add('hidden'); }
+
+function bindSettingsButton(openSettings){
+  const btn = document.getElementById('btn-settings'); if(!btn) return;
+  btn.addEventListener('click', ()=> openSettings());
+}
+
+function animateCoin() {
+  const coinIcon = document.querySelector('.stat .icon');
+  if (coinIcon) { coinIcon.classList.add('coin-bounce'); setTimeout(() => coinIcon.classList.remove('coin-bounce'), 400); }
+  const coinText = document.getElementById('coins-count');
+  if (coinText) { coinText.classList.add('coin-bounce'); setTimeout(() => coinText.classList.remove('coin-bounce'), 400); }
+}
+
+function spawnConfetti(count = 30) {
+  const container = document.createElement('div');
+  container.className = 'confetti';
+  container.style.left = '50%';
+  container.style.top = '40%';
+  const colors = ['#f2b134','#ff6b6b','#48c774','#3b82f6','#a855f7','#ec4899'];
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const angle = Math.random() * 360;
+    const dist = 60 + Math.random() * 140;
+    const tx = Math.cos(angle * Math.PI / 180) * dist;
+    const ty = Math.sin(angle * Math.PI / 180) * dist;
+    piece.style.cssText = `background:${color};left:${50 + tx * 0.3}px;top:${ty * 0.3}px;animation-delay:${Math.random() * 0.3}s;transform:rotate(${Math.random() * 360}deg);`;
+    container.appendChild(piece);
+  }
+  document.body.appendChild(container);
+  setTimeout(() => container.remove(), 2000);
+}
 
 const GAME_SAVE_KEY = 'farmverse-v2-state';
 const DEFAULT_SEED_INVENTORY = { wheat: 3, corn: 0, tomato: 0, potato: 0 };
@@ -450,3 +640,5 @@ class Game {
 }
 
 window.addEventListener('load', () => { const g = new Game(); window.farmverse = g; });
+
+// All modules loaded.
