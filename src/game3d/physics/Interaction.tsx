@@ -17,10 +17,10 @@ function toGrid(worldX: number, worldZ: number): [number, number] {
   return [Math.floor(worldX), Math.floor(worldZ)];
 }
 
-const FARM_PLOT_X = 38;
-const FARM_PLOT_Z = 30;
+const FARM_PLOT_X = 40;
+const FARM_PLOT_Z = 49;
 const FARM_PLOT_W = 20;
-const FARM_PLOT_H = 24;
+const FARM_PLOT_H = 20;
 
 function isInFarmPlot(gx: number, gz: number): boolean {
   return gx >= FARM_PLOT_X && gx < FARM_PLOT_X + FARM_PLOT_W &&

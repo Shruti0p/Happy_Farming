@@ -10,6 +10,8 @@ import { GameCamera } from './camera/GameCamera';
 import { Lighting, Sky } from './effects/Lighting';
 import { Weather } from './effects/Weather';
 import { Clouds } from './effects/Clouds';
+import { Birds } from './effects/Birds';
+import { AmbientSound } from './effects/AmbientSound';
 import { Interaction } from './physics/Interaction';
 import { Environment } from '@react-three/drei';
 import { MAP_SIZE, MAP_CENTER, TILE_SIZE } from './types';
@@ -83,6 +85,7 @@ function generateObjects(seed: string, clearedObjects: string[]): Object3DData[]
       if (Math.sqrt(dx * dx + dz * dz) < 6) continue;
 
       if (z >= MAP_SIZE / 3 - 2 && z <= MAP_SIZE / 3 + 2 && x > MAP_SIZE * 0.3 && x < MAP_SIZE * 0.7) continue;
+      if (x >= 40 && x < 60 && z >= 49 && z < 69) continue;
 
       const key = `${x},${z}`;
       if (clearedObjects.includes(key)) continue;
@@ -202,6 +205,8 @@ export function World({ gameState, onPlayerMove, activeTool = 'hand' }: WorldPro
 
       <Terrain tiles={tiles} playerX={playerPos[0]} playerZ={playerPos[2]} tilledTiles={gameState.tilledTiles} />
       <Clouds />
+      <Birds />
+      <AmbientSound />
       <WorldObjects objects={[...objects, ...structures]} />
       <Buildings buildings={buildingsList} />
 
