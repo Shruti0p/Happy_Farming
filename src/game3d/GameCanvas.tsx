@@ -23,7 +23,7 @@ export function GameCanvas({ gameState, onPlayerMove, activeTool }: GameCanvasPr
       gl={{
         antialias: true,
         toneMapping: 3,
-        toneMappingExposure: 2.5,
+        toneMappingExposure: 1.0,
       }}
       camera={{
         fov: 50,

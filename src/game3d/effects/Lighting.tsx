@@ -86,7 +86,7 @@ export function Lighting({ hour, minute, isRaining, isSnowing }: LightingProps) 
     const color = getSunColor(hour, minute);
     sunRef.current.color.copy(color);
 
-    const intensity = Math.max(0, Math.sin(angle)) * 2.5 * weatherDim;
+    const intensity = Math.max(0, Math.sin(angle)) * 1.2 * weatherDim;
     sunRef.current.intensity = intensity;
 
     const ambIntensity = getAmbientIntensity(hour, minute) * weatherDim;
@@ -108,15 +108,15 @@ export function Lighting({ hour, minute, isRaining, isSnowing }: LightingProps) 
 
   return (
     <>
-      <ambientLight ref={ambientRef} intensity={getAmbientIntensity(hour, minute) * 0.8 * weatherDim} color={0xB0C4DE} />
+      <ambientLight ref={ambientRef} intensity={getAmbientIntensity(hour, minute) * 0.5 * weatherDim} color={0xB0C4DE} />
       <hemisphereLight
         ref={hemiRef}
-        args={[0x87CEEB, 0x5A8B4A, 0.6 * weatherDim]}
+        args={[0x87CEEB, 0x5A8B4A, 0.4 * weatherDim]}
       />
       <directionalLight
         ref={sunRef}
         position={[15, 25, 15]}
-        intensity={2.5 * weatherDim}
+        intensity={1.2 * weatherDim}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -146,10 +146,10 @@ export function Sky({ hour, minute, isRaining, isSnowing }: LightingProps) {
   const wd = isRaining || isSnowing ? 0.6 : 1.0;
   const isNight = ambIntensity < 0.3;
 
-  const turbidity = isNight ? 20 : 10 - ambIntensity * 5;
-  const rayleigh = isNight ? 4 : 0.5 + ambIntensity * 2;
-  const mieCoefficient = isNight ? 0.1 : 0.005;
-  const mieDirectionalG = isNight ? 0.3 : 0.82;
+  const turbidity = isNight ? 20 : 8 - ambIntensity * 3;
+  const rayleigh = isNight ? 4 : 1 + ambIntensity * 1.5;
+  const mieCoefficient = isNight ? 0.1 : 0.003;
+  const mieDirectionalG = isNight ? 0.3 : 0.85;
 
   const bg = useMemo(() => new THREE.Color(0x87CEEB), []);
 

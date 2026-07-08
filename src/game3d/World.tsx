@@ -196,7 +196,8 @@ export function World({ gameState, onPlayerMove, activeTool = 'hand' }: WorldPro
         isSnowing={false}
       />
       <Weather weather={gameState.weather.toLowerCase()} />
-      <Environment preset="forest" />
+      <Environment preset="park" />
+      <fog attach="fog" args={[0x87CEEB, 40, 120]} />
 
       <Terrain tiles={tiles} playerX={playerPos[0]} playerZ={playerPos[2]} />
       <WorldObjects objects={[...objects, ...structures]} />
