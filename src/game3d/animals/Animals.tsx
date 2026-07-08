@@ -32,8 +32,6 @@ function getSpeed(type: string): number {
   return ANIMAL_SPEEDS[type] ?? 0.4;
 }
 
-const lastSoundTime: Record<string, number> = {};
-
 function playAnimalSound(type: string, playerDist: number) {
   if (playerDist > 12) return;
   const volume = Math.max(0.01, 0.05 * (1 - playerDist / 12));
@@ -57,7 +55,6 @@ function playAnimalSound(type: string, playerDist: number) {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(300, ctx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.12);
-        gain.gain.setValueAtTime(volume, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
         osc.start(); osc.stop(ctx.currentTime + 0.2);
         break;
@@ -117,6 +114,66 @@ function playAnimalSound(type: string, playerDist: number) {
   } catch {}
 }
 
+const EMOTE_TYPES: Record<string, string[]> = {
+  rabbit: ['bob', 'look', 'spin', 'hop'],
+  dog: ['bob', 'spin', 'stretch', 'look'],
+  cat: ['stretch', 'roll', 'look', 'spin'],
+  chicken: ['peck', 'bob', 'spin'],
+  duck: ['peck', 'bob', 'spin'],
+  cow: ['bob', 'look', 'stretch'],
+  sheep: ['bob', 'hop', 'look'],
+  pig: ['spin', 'bob', 'look'],
+  goat: ['bob', 'hop', 'look'],
+  horse: ['bob', 'stretch', 'spin'],
+};
+
+const BASE_EMOTE_DURATION = 2.0;
+
+interface EmoteState {
+  active: boolean;
+  type: string;
+  phase: number;
+  duration: number;
+}
+
+function runEmote(type: string, phase: number, duration: number, group: THREE.Group) {
+  const t = phase / duration;
+  const p = Math.sin(t * Math.PI);
+  switch (type) {
+    case 'bob':
+      group.position.y = p * 0.12;
+      break;
+    case 'hop':
+      group.position.y = p * 0.2;
+      break;
+    case 'peck':
+      group.rotation.x = p * 0.3;
+      break;
+    case 'spin':
+      group.rotation.y += 0.05;
+      break;
+    case 'stretch':
+      group.scale.y = 1 + p * 0.3;
+      group.scale.x = 1 - p * 0.1;
+      group.scale.z = 1 - p * 0.1;
+      break;
+    case 'roll':
+      group.rotation.z = p * 0.4;
+      group.position.y = p * 0.08;
+      break;
+    case 'look':
+      group.rotation.y += Math.sin(t * Math.PI * 2) * 0.2;
+      break;
+  }
+}
+
+function resetEmote(group: THREE.Group) {
+  group.position.y = 0;
+  group.rotation.x = 0;
+  group.rotation.z = 0;
+  group.scale.set(1, 1, 1);
+}
+
 function RiggedAnimal({ type, isMoving }: { type: string; isMoving: boolean }) {
   const url = ANIMAL_MODELS[type];
   const { scene: rawScene, animations } = useGLTF(url);
@@ -134,23 +191,18 @@ function RiggedAnimal({ type, isMoving }: { type: string; isMoving: boolean }) {
       const action = mixer.current.clipAction(clip);
       actions.current.set(clip.name.toLowerCase(), action);
     }
-    return () => {
-      if (mixer.current) mixer.current.stopAllAction();
-    };
+    return () => { if (mixer.current) mixer.current.stopAllAction(); };
   }, [scene, animations]);
 
   useFrame((_, delta) => {
     if (!mixer.current) return;
     mixer.current.update(delta);
-
     const animName = isMoving ? 'walk' : 'idle';
     const prev = currentAnim.current;
-
     if (animName !== prev) {
       currentAnim.current = animName;
       const walkAction = findAction(actions.current, ['walk', 'run', 'gallop', 'move']);
       const idleAction = findAction(actions.current, ['idle', 'stand', 'still', 'rest']);
-
       if (isMoving && walkAction) {
         if (idleAction) idleAction.fadeOut(0.3);
         walkAction.reset().fadeIn(0.3).play();
@@ -186,7 +238,7 @@ function ProceduralAnimal({ type }: { type: string }) {
   return <primitive object={scene} scale={scale} castShadow receiveShadow />;
 }
 
-const ANIMATED_TYPES = ['chicken', 'cow', 'sheep', 'pig', 'horse'];
+const ANIMATED_TYPES = ['chicken', 'cow', 'sheep', 'pig', 'horse', 'rabbit', 'dog', 'cat'];
 
 function getIsAnimated(type: string): boolean {
   return ANIMATED_TYPES.includes(type);
@@ -202,6 +254,7 @@ interface AnimalProps {
 
 function Animal({ type, x, z }: AnimalProps) {
   const ref = useRef<THREE.Group>(null!);
+  const innerRef = useRef<THREE.Group>(null!);
   const target = useRef(new THREE.Vector3(x, 0, z));
   const timer = useRef(Math.random() * 10);
   const walkPhase = useRef(0);
@@ -211,11 +264,14 @@ function Animal({ type, x, z }: AnimalProps) {
   const soundTimer = useRef(5 + Math.random() * 10);
   const isMoving = useRef(false);
 
+  const emote = useRef<EmoteState>({ active: false, type: '', phase: 0, duration: 2 });
+  const emoteTimer = useRef(3 + Math.random() * 6);
+
   const isFlock = FLOCK_TYPES.includes(type as any);
   const isAnimated = getIsAnimated(type);
 
   useFrame((_, delta) => {
-    if (!ref.current) return;
+    if (!ref.current || !innerRef.current) return;
 
     const px = (window as any).__playerPos?.x ?? 50;
     const pz = (window as any).__playerPos?.z ?? 50;
@@ -259,6 +315,27 @@ function Animal({ type, x, z }: AnimalProps) {
       }
     }
 
+    emoteTimer.current -= delta;
+    if (emoteTimer.current <= 0 && !emote.current.active) {
+      const possible = EMOTE_TYPES[type];
+      if (possible && possible.length > 0 && playerDist < 20) {
+        const idx = Math.floor(Math.random() * possible.length);
+        emote.current = { active: true, type: possible[idx], phase: 0, duration: BASE_EMOTE_DURATION * (0.8 + Math.random() * 0.4) };
+      }
+      emoteTimer.current = 5 + Math.random() * 8;
+    }
+
+    if (emote.current.active) {
+      emote.current.phase += delta;
+      if (emote.current.phase >= emote.current.duration) {
+        emote.current.active = false;
+        emote.current.phase = 0;
+        resetEmote(innerRef.current);
+      } else {
+        runEmote(emote.current.type, emote.current.phase, emote.current.duration, innerRef.current);
+      }
+    }
+
     const dx = target.current.x - ref.current.position.x;
     const dz = target.current.z - ref.current.position.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
@@ -281,11 +358,13 @@ function Animal({ type, x, z }: AnimalProps) {
 
   return (
     <group ref={ref} position={[x, 0, z]}>
-      {isAnimated ? (
-        <RiggedAnimal type={type} isMoving={isMoving.current} />
-      ) : (
-        <ProceduralAnimal type={type} />
-      )}
+      <group ref={innerRef}>
+        {isAnimated ? (
+          <RiggedAnimal type={type} isMoving={isMoving.current} />
+        ) : (
+          <ProceduralAnimal type={type} />
+        )}
+      </group>
     </group>
   );
 }
