@@ -11,7 +11,7 @@ const GRASS_PATHS = [
   '/models/stylized/Grass_Wispy_Tall.gltf',
 ];
 
-const GRASS_COUNT_PER_TYPE = 2400;
+const GRASS_COUNT_PER_TYPE = 4800;
 
 const FARM_X = 40, FARM_Z = 58, FARM_W = 20, FARM_H = 20;
 

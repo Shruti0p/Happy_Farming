@@ -37,7 +37,7 @@ function AnimatedBird({ seed }: { seed: number }) {
   });
 
   return (
-    <group ref={groupRef} scale={0.035}>
+    <group ref={groupRef} scale={0.12}>
       <mesh position={[0, 0, 0]} castShadow>
         <capsuleGeometry args={[0.08, 0.2, 4, 6]} />
         <meshStandardMaterial color={bodyColor} />
@@ -54,15 +54,15 @@ function AnimatedBird({ seed }: { seed: number }) {
         <coneGeometry args={[0.02, 0.08, 4]} />
         <meshStandardMaterial color={bodyColor} />
       </mesh>
-      <group ref={leftWingRef} position={[-0.1, 0.08, 0]}>
+      <group ref={leftWingRef} position={[-0.12, 0.08, 0]}>
         <mesh>
-          <planeGeometry args={[0.25, 0.07]} />
+          <planeGeometry args={[0.35, 0.1]} />
           <meshStandardMaterial color={bodyColor} side={THREE.DoubleSide} />
         </mesh>
       </group>
-      <group ref={rightWingRef} position={[0.1, 0.08, 0]}>
+      <group ref={rightWingRef} position={[0.12, 0.08, 0]}>
         <mesh>
-          <planeGeometry args={[0.25, 0.07]} />
+          <planeGeometry args={[0.35, 0.1]} />
           <meshStandardMaterial color={bodyColor} side={THREE.DoubleSide} />
         </mesh>
       </group>
