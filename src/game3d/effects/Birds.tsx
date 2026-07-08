@@ -29,7 +29,7 @@ function Bird({ seed }: { seed: number }) {
   });
 
   return (
-    <group ref={groupRef} scale={0.5}>
+    <group ref={groupRef} scale={0.08}>
       <primitive object={scene} castShadow />
     </group>
   );

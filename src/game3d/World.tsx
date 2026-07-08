@@ -11,6 +11,7 @@ import { Lighting, Sky } from './effects/Lighting';
 import { Weather } from './effects/Weather';
 import { Clouds } from './effects/Clouds';
 import { Birds } from './effects/Birds';
+import { GrassScatter } from './effects/GrassScatter';
 import { AmbientSound } from './effects/AmbientSound';
 import { Interaction } from './physics/Interaction';
 import { Environment } from '@react-three/drei';
@@ -206,6 +207,7 @@ export function World({ gameState, onPlayerMove, activeTool = 'hand' }: WorldPro
       <Terrain tiles={tiles} playerX={playerPos[0]} playerZ={playerPos[2]} tilledTiles={gameState.tilledTiles} />
       <Clouds />
       <Birds />
+      <GrassScatter />
       <AmbientSound />
       <WorldObjects objects={[...objects, ...structures]} />
       <Buildings buildings={buildingsList} />
