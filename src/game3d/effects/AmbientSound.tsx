@@ -48,8 +48,8 @@ function createBirdChirps(ctx: AudioContext, gainNode: GainNode) {
       osc.frequency.setValueAtTime(freq, ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(freq + 200 + Math.random() * 400, ctx.currentTime + 0.05);
       osc.frequency.exponentialRampToValueAtTime(freq - 100, ctx.currentTime + 0.1);
-      g.gain.setValueAtTime(0.015, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+          g.gain.setValueAtTime(0.05, ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.15);
     }, 3000 + Math.random() * 5000);

@@ -84,6 +84,7 @@ export function Player({ position, onPositionChange }: PlayerProps) {
     if (newX >= 0 && newX <= MAP_SIZE && newZ >= 0 && newZ <= MAP_SIZE) {
       groupRef.current.position.x = newX;
       groupRef.current.position.z = newZ;
+      (window as any).__playerPos = { x: newX, z: newZ };
       onPositionChange(newX, newZ);
     }
 
@@ -115,6 +116,7 @@ export function Player({ position, onPositionChange }: PlayerProps) {
   useEffect(() => {
     if (groupRef.current && position) {
       groupRef.current.position.set(position[0], position[1], position[2]);
+      (window as any).__playerPos = { x: position[0], z: position[2] };
     }
   }, [position[0], position[1], position[2]]);
 

@@ -18,7 +18,7 @@ function toGrid(worldX: number, worldZ: number): [number, number] {
 }
 
 const FARM_PLOT_X = 40;
-const FARM_PLOT_Z = 49;
+const FARM_PLOT_Z = 58;
 const FARM_PLOT_W = 20;
 const FARM_PLOT_H = 20;
 

@@ -85,7 +85,7 @@ function generateObjects(seed: string, clearedObjects: string[]): Object3DData[]
       if (Math.sqrt(dx * dx + dz * dz) < 6) continue;
 
       if (z >= MAP_SIZE / 3 - 2 && z <= MAP_SIZE / 3 + 2 && x > MAP_SIZE * 0.3 && x < MAP_SIZE * 0.7) continue;
-      if (x >= 40 && x < 60 && z >= 49 && z < 69) continue;
+      if (x >= 40 && x < 60 && z >= 58 && z < 78) continue;
 
       const key = `${x},${z}`;
       if (clearedObjects.includes(key)) continue;

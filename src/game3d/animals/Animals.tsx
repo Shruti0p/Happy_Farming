@@ -1,8 +1,8 @@
-import { useRef, useMemo, useEffect, useCallback } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
-import { MAP_SIZE, MAP_CENTER } from '../types';
+import { MAP_SIZE } from '../types';
 
 const ANIMAL_MODELS: Record<string, string> = {
   chicken: '/models/animals/chicken.glb',
@@ -32,14 +32,18 @@ function getSpeed(type: string): number {
   return ANIMAL_SPEEDS[type] ?? 0.4;
 }
 
-function playAnimalSound(type: string) {
+const lastSoundTime: Record<string, number> = {};
+
+function playAnimalSound(type: string, playerDist: number) {
+  if (playerDist > 12) return;
+  const volume = Math.max(0.01, 0.05 * (1 - playerDist / 12));
   try {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
-    gain.gain.setValueAtTime(0.03, ctx.currentTime);
+    gain.gain.setValueAtTime(volume, ctx.currentTime);
 
     switch (type) {
       case 'chicken':
@@ -53,7 +57,7 @@ function playAnimalSound(type: string) {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(300, ctx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.setValueAtTime(volume, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
         osc.start(); osc.stop(ctx.currentTime + 0.2);
         break;
@@ -113,12 +117,79 @@ function playAnimalSound(type: string) {
   } catch {}
 }
 
-function AnimalMesh({ type }: { type: string }) {
+function RiggedAnimal({ type, isMoving }: { type: string; isMoving: boolean }) {
+  const url = ANIMAL_MODELS[type];
+  const { scene: rawScene, animations } = useGLTF(url);
+  const scene = useMemo(() => rawScene.clone(true), [rawScene]);
+  const scale = ANIMAL_SCALES[type] ?? 1;
+
+  const mixer = useRef<THREE.AnimationMixer | null>(null);
+  const actions = useRef<Map<string, THREE.AnimationAction>>(new Map());
+  const currentAnim = useRef<string>('');
+
+  useEffect(() => {
+    if (!scene) return;
+    mixer.current = new THREE.AnimationMixer(scene);
+    for (const clip of animations || []) {
+      const action = mixer.current.clipAction(clip);
+      actions.current.set(clip.name.toLowerCase(), action);
+    }
+    return () => {
+      if (mixer.current) mixer.current.stopAllAction();
+    };
+  }, [scene, animations]);
+
+  useFrame((_, delta) => {
+    if (!mixer.current) return;
+    mixer.current.update(delta);
+
+    const animName = isMoving ? 'walk' : 'idle';
+    const prev = currentAnim.current;
+
+    if (animName !== prev) {
+      currentAnim.current = animName;
+      const walkAction = findAction(actions.current, ['walk', 'run', 'gallop', 'move']);
+      const idleAction = findAction(actions.current, ['idle', 'stand', 'still', 'rest']);
+
+      if (isMoving && walkAction) {
+        if (idleAction) idleAction.fadeOut(0.3);
+        walkAction.reset().fadeIn(0.3).play();
+      } else if (!isMoving && idleAction) {
+        if (walkAction) walkAction.fadeOut(0.3);
+        idleAction.reset().fadeIn(0.3).play();
+      } else {
+        const anyAction = walkAction || idleAction;
+        if (anyAction && anyAction !== actions.current.get(prev)) {
+          anyAction.reset().play();
+        }
+      }
+    }
+  });
+
+  return <primitive object={scene} scale={scale} castShadow receiveShadow />;
+}
+
+function findAction(map: Map<string, THREE.AnimationAction>, names: string[]): THREE.AnimationAction | undefined {
+  for (const n of names) {
+    for (const [key, action] of map) {
+      if (key.includes(n)) return action;
+    }
+  }
+  return undefined;
+}
+
+function ProceduralAnimal({ type }: { type: string }) {
   const url = ANIMAL_MODELS[type];
   const { scene: rawScene } = useGLTF(url);
   const scene = useMemo(() => rawScene.clone(true), [rawScene]);
   const scale = ANIMAL_SCALES[type] ?? 1;
   return <primitive object={scene} scale={scale} castShadow receiveShadow />;
+}
+
+const ANIMATED_TYPES = ['chicken', 'cow', 'sheep', 'pig', 'horse'];
+
+function getIsAnimated(type: string): boolean {
+  return ANIMATED_TYPES.includes(type);
 }
 
 interface AnimalProps {
@@ -138,11 +209,20 @@ function Animal({ type, x, z }: AnimalProps) {
   const isJumping = useRef(false);
   const jumpHeight = useRef(0);
   const soundTimer = useRef(5 + Math.random() * 10);
+  const isMoving = useRef(false);
 
   const isFlock = FLOCK_TYPES.includes(type as any);
+  const isAnimated = getIsAnimated(type);
 
   useFrame((_, delta) => {
     if (!ref.current) return;
+
+    const px = (window as any).__playerPos?.x ?? 50;
+    const pz = (window as any).__playerPos?.z ?? 50;
+    const dxp = ref.current.position.x - px;
+    const dzp = ref.current.position.z - pz;
+    const playerDist = Math.sqrt(dxp * dxp + dzp * dzp);
+
     timer.current -= delta;
     if (timer.current <= 0) {
       timer.current = 2 + Math.random() * 5;
@@ -157,7 +237,7 @@ function Animal({ type, x, z }: AnimalProps) {
     soundTimer.current -= delta;
     if (soundTimer.current <= 0) {
       soundTimer.current = 8 + Math.random() * 15;
-      playAnimalSound(type);
+      playAnimalSound(type, playerDist);
     }
 
     jumpTimer.current -= delta;
@@ -182,15 +262,17 @@ function Animal({ type, x, z }: AnimalProps) {
     const dx = target.current.x - ref.current.position.x;
     const dz = target.current.z - ref.current.position.z;
     const dist = Math.sqrt(dx * dx + dz * dz);
+    const moving = dist > 0.1;
+    isMoving.current = moving;
 
-    if (dist > 0.1) {
+    if (moving) {
       const speed = getSpeed(type);
       const vx = (dx / dist) * speed * delta;
       const vz = (dz / dist) * speed * delta;
       ref.current.position.x += vx;
       ref.current.position.z += vz;
       ref.current.rotation.y = Math.atan2(dx, dz);
-      if (!isJumping.current) {
+      if (!isJumping.current && !isAnimated) {
         walkPhase.current += delta * 4;
         ref.current.position.y = Math.abs(Math.sin(walkPhase.current)) * 0.003;
       }
@@ -199,7 +281,11 @@ function Animal({ type, x, z }: AnimalProps) {
 
   return (
     <group ref={ref} position={[x, 0, z]}>
-      <AnimalMesh type={type} />
+      {isAnimated ? (
+        <RiggedAnimal type={type} isMoving={isMoving.current} />
+      ) : (
+        <ProceduralAnimal type={type} />
+      )}
     </group>
   );
 }
@@ -228,7 +314,7 @@ function generateWildAnimals(gameStateAnimals: { id: string; type: string; name:
       wz = 10 + Math.floor(rng() * (MAP_SIZE - 20));
       key = `${wx},${wz}`;
       attempts++;
-    } while ((existingKeys.has(key) || (wx >= 38 && wx < 62 && wz >= 8 && wz < 72)) && attempts < 20);
+    } while ((existingKeys.has(key) || (wx >= 38 && wx < 62 && wz >= 56 && wz < 80)) && attempts < 20);
 
     const type = wildTypes[Math.floor(rng() * wildTypes.length)];
     wild.push({
@@ -248,7 +334,6 @@ interface AnimalsProps {
 
 export function Animals({ animals }: AnimalsProps) {
   const wildAnimals = useMemo(() => generateWildAnimals(animals), [animals]);
-
   const allAnimals = useMemo(() => [...animals, ...wildAnimals], [animals, wildAnimals]);
 
   return (
