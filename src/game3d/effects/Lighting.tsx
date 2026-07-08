@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { Sky as DreiSky } from '@react-three/drei';
 
 const DAY_DURATION = 120;
@@ -132,6 +132,7 @@ export function Lighting({ hour, minute, isRaining, isSnowing }: LightingProps) 
 }
 
 export function Sky({ hour, minute, isRaining, isSnowing }: LightingProps) {
+  const { scene } = useThree();
   const angle = getSunAngle(hour, minute);
   const dist = 30;
 
@@ -150,12 +151,24 @@ export function Sky({ hour, minute, isRaining, isSnowing }: LightingProps) {
   const mieCoefficient = isNight ? 0.1 : 0.005;
   const mieDirectionalG = isNight ? 0.3 : 0.82;
 
+  const bg = useMemo(() => new THREE.Color(0x87CEEB), []);
+
+  useFrame(() => {
+    bg.setHSL(
+      0.58 - ambIntensity * 0.06,
+      0.15 + ambIntensity * 0.25,
+      Math.max(0.08, (ambIntensity * 0.5 + 0.3) * wd),
+    );
+    scene.background = bg;
+  });
+
   if (isNight) {
     return null;
   }
 
   return (
     <DreiSky
+      distance={290}
       sunPosition={sunPosition}
       turbidity={turbidity}
       rayleigh={rayleigh}

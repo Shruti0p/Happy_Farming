@@ -143,9 +143,9 @@ export function Terrain({ tiles, playerX, playerZ }: TerrainProps) {
 
   if (!terrainData) {
     return (
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[MAP_SIZE / 2, -0.025, MAP_SIZE / 2]}>
-        <planeGeometry args={[MAP_SIZE, MAP_SIZE]} />
-        <meshStandardMaterial color={0x6AB845} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[MAP_SIZE / 2, -0.15, MAP_SIZE / 2]}>
+        <planeGeometry args={[MAP_SIZE * 1.5, MAP_SIZE * 1.5]} />
+        <meshStandardMaterial color={0x5A8B4A} roughness={1} />
       </mesh>
     );
   }
@@ -154,7 +154,11 @@ export function Terrain({ tiles, playerX, playerZ }: TerrainProps) {
 
   return (
     <group>
-      <mesh geometry={geo} position={[0, 0, 0]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[MAP_SIZE / 2, -0.15, MAP_SIZE / 2]} receiveShadow>
+        <planeGeometry args={[MAP_SIZE * 1.5, MAP_SIZE * 1.5]} />
+        <meshStandardMaterial color={0x5A8B4A} roughness={1} />
+      </mesh>
+      <mesh geometry={geo} position={[0, -0.05, 0]} receiveShadow>
         <meshStandardMaterial vertexColors roughness={0.9} />
       </mesh>
       {waterTiles.map(tile => (
