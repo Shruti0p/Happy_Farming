@@ -9,6 +9,12 @@ const ANIMAL_MODELS: Record<string, string> = {
   cow: '/models/animals/cow.glb',
   sheep: '/models/animals/sheep.glb',
   pig: '/models/animals/pig.glb',
+  duck: '/models/animals/duck.glb',
+  goat: '/models/animals/goat.glb',
+  horse: '/models/animals/horse.glb',
+  rabbit: '/models/animals/rabbit.glb',
+  dog: '/models/animals/dog.glb',
+  cat: '/models/animals/cat.glb',
 };
 
 const ANIMAL_SCALES: Record<string, number> = {
@@ -16,16 +22,19 @@ const ANIMAL_SCALES: Record<string, number> = {
   cow: 0.5,
   sheep: 0.5,
   pig: 0.5,
+  duck: 0.6,
+  goat: 0.5,
+  horse: 0.6,
+  rabbit: 0.5,
+  dog: 0.5,
+  cat: 0.4,
 };
 
 function AnimalMesh({ type }: { type: string }) {
   const url = ANIMAL_MODELS[type];
-  if (!url) return null;
-
   const { scene: rawScene } = useGLTF(url);
   const scene = useMemo(() => rawScene.clone(true), [rawScene]);
   const scale = ANIMAL_SCALES[type] ?? 1;
-
   return <primitive object={scene} scale={scale} castShadow receiveShadow />;
 }
 
@@ -60,7 +69,7 @@ function Animal({ type, x, z }: AnimalProps) {
     const dist = Math.sqrt(dx * dx + dz * dz);
 
     if (dist > 0.1) {
-      const speed = type === 'chicken' ? 0.8 : 0.4;
+      const speed = ['chicken', 'duck', 'rabbit'].includes(type) ? 0.8 : type === 'horse' ? 1.2 : 0.4;
       const vx = (dx / dist) * speed * delta;
       const vz = (dz / dist) * speed * delta;
       ref.current.position.x += vx;

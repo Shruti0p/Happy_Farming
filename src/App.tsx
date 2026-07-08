@@ -42,10 +42,11 @@ const DEFAULT_STATE = (): SavedGameState => {
       { id: 'pickaxe', name: 'Mining Pickaxe', type: 'tool', count: 1, description: 'Shatter large boulders for building stone.', color: '#7a828a' },
       { id: 'scythe', name: 'Scythe', type: 'tool', count: 1, description: 'Used to clear weeds, grass, and destroy dead/growing crops.', color: '#dee2e6' },
       { id: 'fishing_rod', name: 'Fishing Rod', type: 'tool', count: 1, description: 'Cast into rivers to catch fresh, valuable fish.', color: '#fcbf49' },
-      { id: 'wheat_seeds', name: 'Wheat Seeds', type: 'seed', count: 5, description: 'Grows hardy golden grain.', color: '#e2b13c' },
-      { id: 'tomato_seeds', name: 'Tomato Seeds', type: 'seed', count: 3, description: 'Grows climbing juicy red vines.', color: '#e23c3c' },
+      { id: 'wheat_seeds', name: 'Wheat Seeds', type: 'seed', count: 10, description: 'Grows hardy golden grain.', color: '#e2b13c' },
+      { id: 'carrot_seeds', name: 'Carrot Seeds', type: 'seed', count: 5, description: 'Grows crunchy orange roots.', color: '#e2733c' },
     ],
     crops: {},
+    tilledTiles: {},
     structures: {},
     animals: [],
     clearedObjects: [],
@@ -177,6 +178,7 @@ export default function App() {
 
   // --- AUDIO SYNTHESIS HELPER ---
   const playBeep = (freq = 440, type: OscillatorType = 'sine', dur = 0.08) => {
+    if (!gameState.settings?.sound) return;
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = audioCtx.createOscillator();
@@ -465,6 +467,14 @@ export default function App() {
 
       return nextState;
     });
+  };
+
+  // Settings: Toggle Sound
+  const handleToggleSound = () => {
+    setGameState(prev => ({
+      ...prev,
+      settings: { ...prev.settings, sound: !prev.settings.sound }
+    }));
   };
 
   // Settings: Change Seed
@@ -784,6 +794,7 @@ export default function App() {
             onClose={() => setActiveModal(null)}
             coins={gameState.coins}
             inventory={gameState.inventory}
+            playerLevel={gameState.level}
             onBuyItem={handleBuyItem}
             onBuyAnimal={handleBuyAnimal}
             onSellItem={handleSellItem}
@@ -818,6 +829,8 @@ export default function App() {
             isOpen={true}
             onClose={() => setActiveModal(null)}
             seed={gameState.seed}
+            soundEnabled={gameState.settings?.sound ?? true}
+            onToggleSound={handleToggleSound}
             onUpdateSeed={handleUpdateSeed}
             onResetGame={handleResetGame}
           />

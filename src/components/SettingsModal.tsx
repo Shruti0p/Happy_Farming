@@ -6,6 +6,8 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   seed: string;
+  soundEnabled: boolean;
+  onToggleSound: () => void;
   onUpdateSeed: (newSeed: string) => void;
   onResetGame: () => void;
 }
@@ -14,11 +16,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
   seed,
+  soundEnabled,
+  onToggleSound,
   onUpdateSeed,
   onResetGame,
 }) => {
   const [currentSeed, setCurrentSeed] = useState(seed);
-  const [soundEnabled, setSoundEnabled] = useState(true);
 
   if (!isOpen) return null;
 
@@ -30,36 +33,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const handleSaveSeed = () => {
     onUpdateSeed(currentSeed);
     onClose();
-  };
-
-  const playSynthesizedBeep = () => {
-    if (!soundEnabled) return;
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      
-      oscillator.type = 'sine';
-      oscillator.frequency.value = 440; // Pitch: A4
-      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-      
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.1);
-    } catch (e) {
-      console.warn('Audio synthesis block or unsupported');
-    }
-  };
-
-  const toggleSound = () => {
-    const nextVal = !soundEnabled;
-    setSoundEnabled(nextVal);
-    if (nextVal) {
-      setTimeout(() => playSynthesizedBeep(), 50);
-    }
   };
 
   return (
@@ -135,7 +108,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <p className="text-xs text-[#d7ccc8]/60 mt-0.5">Toggle sound effects feedback</p>
             </div>
             <button
-              onClick={toggleSound}
+              onClick={onToggleSound}
               className={`p-2.5 rounded-lg border border-white/25 transition-all ${soundEnabled ? 'bg-[#8bc34a] text-white shadow-sm' : 'bg-[#5d4037] text-[#d7ccc8]'}`}
             >
               {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}

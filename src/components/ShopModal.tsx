@@ -8,8 +8,9 @@ interface ShopModalProps {
   onClose: () => void;
   coins: number;
   inventory: InventoryItem[];
+  playerLevel: number;
   onBuyItem: (itemId: string, name: string, type: 'seed' | 'tool' | 'material' | 'crop', price: number, color: string, description: string) => void;
-  onBuyAnimal: (type: 'chicken' | 'cow' | 'sheep', price: number, name: string) => void;
+  onBuyAnimal: (type: string, price: number, name: string) => void;
   onSellItem: (itemId: string, price: number) => void;
 }
 
@@ -18,6 +19,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   onClose,
   coins,
   inventory,
+  playerLevel,
   onBuyItem,
   onBuyAnimal,
   onSellItem,
@@ -37,7 +39,8 @@ export const ShopModal: React.FC<ShopModalProps> = ({
     type: 'seed' as const,
     color: crop.color,
     description: `Plant on tilled soil. Grows in ${crop.growTime} hrs. Sells for ${crop.sellPrice}g.`,
-    cropId: crop.id
+    cropId: crop.id,
+    level: crop.level,
   }));
 
   // 2. Tools Category
@@ -57,26 +60,44 @@ export const ShopModal: React.FC<ShopModalProps> = ({
 
   // 4. Animals Category
   const animalItems = [
-    { id: 'chicken', name: 'Baby Chick', price: 100, type: 'chicken' as const, color: '#f8f9fa', description: 'Chirping white chick. Grows up to produce eggs daily!' },
-    { id: 'cow', name: 'Spotted Calf', price: 250, type: 'cow' as const, color: '#ffffff', description: 'Playful baby calf. Produces buckets of milk daily.' },
-    { id: 'sheep', name: 'Fluffy Lamb', price: 200, type: 'sheep' as const, color: '#dee2e6', description: 'Warm baby sheep. Grows a soft, shearable wool coat.' }
+    { id: 'chicken', name: 'Baby Chick', price: 100, level: 1, color: '#f8f9fa', description: 'Chirping white chick. Grows up to produce eggs daily!' },
+    { id: 'duck', name: 'Puddle Duck', price: 200, level: 2, color: '#ffee32', description: 'Loves water. Produces rich duck eggs.' },
+    { id: 'rabbit', name: 'Cotton Rabbit', price: 300, level: 2, color: '#ffffff', description: 'Soft fluffy pet. Produces lucky rabbit feet.' },
+    { id: 'cow', name: 'Spotted Calf', price: 400, level: 3, color: '#ffffff', description: 'Playful baby calf. Produces buckets of milk daily.' },
+    { id: 'goat', name: 'Alpine Goat', price: 450, level: 3, color: '#e9ecef', description: 'Produces tangy premium goat milk.' },
+    { id: 'sheep', name: 'Fluffy Lamb', price: 500, level: 4, color: '#dee2e6', description: 'Warm baby sheep. Grows a soft shearable wool coat.' },
+    { id: 'pig', name: 'Truffle Pig', price: 700, level: 4, color: '#ffb3c1', description: 'Noses around the farm. Unearths rare black truffles.' },
+    { id: 'horse', name: 'Thoroughbred Horse', price: 1000, level: 5, color: '#9c6644', description: 'Majestic companion. Sheds premium hair for brush crafting.' },
+    { id: 'cat', name: 'Barn Cat', price: 150, level: 2, color: '#f4a261', description: 'Keeps pests away. Catches stray mice overnight.' },
+    { id: 'dog', name: 'Herding Dog', price: 200, level: 3, color: '#e09f67', description: 'Digs up ancient buried fossils and old bones.' },
   ];
 
   // 5. Sell Goods List (Sells crops and items back to market)
   const sellableList = [
     { id: 'wheat', name: 'Wheat', price: 25, color: '#e2b13c' },
+    { id: 'carrot', name: 'Carrot', price: 35, color: '#e2733c' },
+    { id: 'corn', name: 'Corn', price: 45, color: '#f0e34b' },
+    { id: 'rice', name: 'Rice', price: 40, color: '#d4e157' },
     { id: 'tomato', name: 'Tomato', price: 55, color: '#e23c3c' },
-    { id: 'carrot', name: 'Carrot', price: 40, color: '#e2733c' },
-    { id: 'strawberry', name: 'Strawberry', price: 85, color: '#e23c7c' },
-    { id: 'corn', name: 'Corn', price: 65, color: '#f0e34b' },
+    { id: 'cotton', name: 'Cotton', price: 50, color: '#f5f5f5' },
+    { id: 'potato', name: 'Potato', price: 65, color: '#a1887f' },
+    { id: 'strawberry', name: 'Strawberry', price: 80, color: '#e23c7c' },
+    { id: 'sugarcane', name: 'Sugarcane', price: 90, color: '#66bb6a' },
     { id: 'wood', name: 'Wood', price: 5, color: '#8f5c35' },
     { id: 'stone', name: 'Stone', price: 5, color: '#7a828a' },
     { id: 'fiber', name: 'Fiber', price: 2, color: '#38b000' },
     { id: 'berry', name: 'Wild Berry', price: 12, color: '#f72585' },
     { id: 'flower', name: 'Wild Flower', price: 8, color: '#f15bb5' },
     { id: 'egg', name: 'Fresh Egg', price: 15, color: '#f8f9fa' },
+    { id: 'duck_egg', name: 'Duck Egg', price: 25, color: '#ffee32' },
     { id: 'milk', name: 'Farm Milk', price: 45, color: '#4cc9f0' },
+    { id: 'goat_milk', name: 'Goat Milk', price: 55, color: '#e9ecef' },
     { id: 'wool', name: 'Sheep Wool', price: 60, color: '#dee2e6' },
+    { id: 'truffle', name: 'Black Truffle', price: 120, color: '#3d2511' },
+    { id: 'horse_hair', name: 'Horse Hair', price: 80, color: '#9c6644' },
+    { id: 'rabbit_foot', name: 'Rabbit Foot', price: 90, color: '#ffffff' },
+    { id: 'dog_bone', name: 'Ancient Bone', price: 70, color: '#e09f67' },
+    { id: 'cat_mouse', name: 'Catch of the Day', price: 30, color: '#f4a261' },
     { id: 'fish_trout', name: 'Rainbow Trout', price: 30, color: '#4895ef' },
     { id: 'fish_salmon', name: 'River Salmon', price: 60, color: '#ffcad4' },
     { id: 'fish_carp', name: 'Golden Carp', price: 120, color: '#ffd166' }
@@ -141,17 +162,20 @@ export const ShopModal: React.FC<ShopModalProps> = ({
               <p className="text-xs text-[#d7ccc8]/70 italic mb-2">Buy fresh seasonal crop seeds to cultivate on plowed plots.</p>
               {seedItems.map((item) => {
                 const canAfford = coins >= item.price;
+                const meetsLevel = playerLevel >= item.level;
+                const locked = !meetsLevel;
                 return (
-                  <div key={item.id} className="flex items-center justify-between p-3.5 rounded-lg border-2 border-[#5d4037] bg-[#3e2723] hover:border-[#ffeb3b] transition-colors">
+                  <div key={item.id} className={`flex items-center justify-between p-3.5 rounded-lg border-2 bg-[#3e2723] transition-colors ${locked ? 'border-[#5d4037] opacity-60' : 'border-[#5d4037] hover:border-[#ffeb3b]'}`}>
                     <div className="flex items-center gap-3">
                       <span className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: item.color }} />
                       <div>
                         <h4 className="font-bold text-[#d7ccc8]">{item.name}</h4>
                         <p className="text-xs text-stone-300">{item.description}</p>
+                        {locked && <p className="text-[10px] font-bold text-orange-400 mt-0.5">Requires Level {item.level}</p>}
                       </div>
                     </div>
                     <button
-                      disabled={!canAfford}
+                      disabled={!canAfford || locked}
                       onClick={() => onBuyItem(item.id, item.name, 'seed', item.price, item.color, `Plant this to grow delicious ${item.name.replace(' Seeds', '')}.`)}
                       className="flex items-center gap-1.5 py-1.5 px-3 font-black font-mono text-xs text-white bg-[#8bc34a] hover:bg-green-500 border border-white rounded-lg disabled:opacity-30 disabled:hover:bg-[#8bc34a] transition-colors shadow-sm"
                     >
@@ -233,18 +257,22 @@ export const ShopModal: React.FC<ShopModalProps> = ({
               <p className="text-xs text-[#d7ccc8]/70 italic mb-2">Buy young livestock to rear on your farm. Requires a Coop or Barn!</p>
               {animalItems.map((item) => {
                 const canAfford = coins >= item.price;
-                const petName = `${item.name.split(' ')[1]} ${Math.floor(Math.random() * 90 + 10)}`;
+                const meetsLevel = playerLevel >= item.level;
+                const locked = !meetsLevel;
+                const petNameParts = item.name.split(' ');
+                const petName = `${petNameParts.length > 1 ? petNameParts[1] : item.id} ${Math.floor(Math.random() * 90 + 10)}`;
                 return (
-                  <div key={item.id} className="flex items-center justify-between p-3.5 rounded-lg border-2 border-[#5d4037] bg-[#3e2723] hover:border-[#ffeb3b] transition-colors">
+                  <div key={item.id} className={`flex items-center justify-between p-3.5 rounded-lg border-2 bg-[#3e2723] transition-colors ${locked ? 'border-[#5d4037] opacity-60' : 'border-[#5d4037] hover:border-[#ffeb3b]'}`}>
                     <div className="flex items-center gap-3">
                       <span className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: item.color }} />
                       <div>
                         <h4 className="font-bold text-[#d7ccc8]">{item.name}</h4>
                         <p className="text-xs text-stone-300">{item.description}</p>
+                        {locked && <p className="text-[10px] font-bold text-orange-400 mt-0.5">Requires Level {item.level}</p>}
                       </div>
                     </div>
                     <button
-                      disabled={!canAfford}
+                      disabled={!canAfford || locked}
                       onClick={() => onBuyAnimal(item.id, item.price, petName)}
                       className="flex items-center gap-1.5 py-1.5 px-3 font-black font-mono text-xs text-[#35271d] bg-[#ffd166] hover:bg-[#ffb300] border border-white rounded-lg disabled:opacity-30 disabled:hover:bg-[#ffd166] transition-colors shadow-sm"
                     >

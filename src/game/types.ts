@@ -6,6 +6,7 @@ export interface CropType {
   growTime: number; // in game hours
   color: string;
   stages: number; // number of visual growth stages
+  level: number; // required farmer level
 }
 
 export interface InventoryItem {
@@ -71,6 +72,7 @@ export interface SavedGameState {
   weather: 'Sunny' | 'Rain' | 'Storm' | 'Cloudy' | 'Wind';
   inventory: InventoryItem[];
   crops: { [key: string]: CropState }; // Key: "gridX,gridY"
+  tilledTiles: { [key: string]: { watered: boolean } }; // Key: "gridX,gridY"
   structures: { [key: string]: StructureState }; // Key: "gridX,gridY"
   animals: AnimalState[];
   clearedObjects: string[]; // Set of "gridX,gridY" that were pre-generated trees/rocks/bushes but cleared
@@ -121,48 +123,30 @@ export interface SavedGameState {
 
 export const CROPS: { [key: string]: CropType } = {
   wheat: {
-    id: 'wheat',
-    name: 'Wheat',
-    seedPrice: 10,
-    sellPrice: 25,
-    growTime: 6, // 6 game hours
-    color: '#e2b13c',
-    stages: 4,
-  },
-  tomato: {
-    id: 'tomato',
-    name: 'Tomato',
-    seedPrice: 20,
-    sellPrice: 55,
-    growTime: 12, // 12 game hours
-    color: '#e23c3c',
-    stages: 4,
+    id: 'wheat', name: 'Wheat', seedPrice: 10, sellPrice: 25, growTime: 6, color: '#e2b13c', stages: 4, level: 1,
   },
   carrot: {
-    id: 'carrot',
-    name: 'Carrot',
-    seedPrice: 15,
-    sellPrice: 40,
-    growTime: 8, // 8 game hours
-    color: '#e2733c',
-    stages: 4,
-  },
-  strawberry: {
-    id: 'strawberry',
-    name: 'Strawberry',
-    seedPrice: 30,
-    sellPrice: 85,
-    growTime: 18, // 18 game hours
-    color: '#e23c7c',
-    stages: 4,
+    id: 'carrot', name: 'Carrot', seedPrice: 14, sellPrice: 35, growTime: 7, color: '#e2733c', stages: 4, level: 2,
   },
   corn: {
-    id: 'corn',
-    name: 'Corn',
-    seedPrice: 25,
-    sellPrice: 65,
-    growTime: 14, // 14 game hours
-    color: '#f0e34b',
-    stages: 4,
+    id: 'corn', name: 'Corn', seedPrice: 18, sellPrice: 45, growTime: 9, color: '#f0e34b', stages: 4, level: 3,
+  },
+  rice: {
+    id: 'rice', name: 'Rice', seedPrice: 16, sellPrice: 40, growTime: 8, color: '#d4e157', stages: 4, level: 3,
+  },
+  tomato: {
+    id: 'tomato', name: 'Tomato', seedPrice: 22, sellPrice: 55, growTime: 11, color: '#e23c3c', stages: 4, level: 4,
+  },
+  cotton: {
+    id: 'cotton', name: 'Cotton', seedPrice: 24, sellPrice: 50, growTime: 10, color: '#f5f5f5', stages: 4, level: 4,
+  },
+  potato: {
+    id: 'potato', name: 'Potato', seedPrice: 28, sellPrice: 65, growTime: 12, color: '#a1887f', stages: 4, level: 5,
+  },
+  strawberry: {
+    id: 'strawberry', name: 'Strawberry', seedPrice: 32, sellPrice: 80, growTime: 15, color: '#e23c7c', stages: 4, level: 6,
+  },
+  sugarcane: {
+    id: 'sugarcane', name: 'Sugarcane', seedPrice: 36, sellPrice: 90, growTime: 16, color: '#66bb6a', stages: 4, level: 7,
   },
 };

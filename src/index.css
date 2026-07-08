@@ -23,3 +23,26 @@
   background: #8d6e63;
 }
 
+/* Mobile responsive breakpoint: 600px */
+@media (max-width: 600px) {
+  .hotbar-seed-count {
+    font-size: 7px !important;
+    top: -2px !important;
+    right: -2px !important;
+  }
+  .hud-top-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .hud-toolbar-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+  .hud-tab-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+  .hud-wallet {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+  }
+}
+

@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { MAP_SIZE } from '../types';
 import { getBridge } from '../state/GameStateBridge';
+import { CROPS } from '../../game/types';
 
 const RAYCASTER = new THREE.Raycaster();
 const PLANE = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -16,8 +17,23 @@ function toGrid(worldX: number, worldZ: number): [number, number] {
   return [Math.floor(worldX), Math.floor(worldZ)];
 }
 
+const FARM_PLOT_X = 38;
+const FARM_PLOT_Z = 30;
+const FARM_PLOT_W = 20;
+const FARM_PLOT_H = 24;
+
+function isInFarmPlot(gx: number, gz: number): boolean {
+  return gx >= FARM_PLOT_X && gx < FARM_PLOT_X + FARM_PLOT_W &&
+         gz >= FARM_PLOT_Z && gz < FARM_PLOT_Z + FARM_PLOT_H;
+}
+
 export function Interaction({ activeTool }: { activeTool: string }) {
   const { camera, gl } = useThree();
+
+  const moveToClick = useCallback((worldX: number, worldZ: number) => {
+    const moveFn = (window as any).__movePlayerTo;
+    if (moveFn) moveFn(worldX, worldZ);
+  }, []);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -41,26 +57,48 @@ export function Interaction({ activeTool }: { activeTool: string }) {
 
       const state = bridge.getState();
 
-      const moveToClick = () => {
-        const moveFn = (window as any).__movePlayerTo;
-        if (moveFn) moveFn(worldX, worldZ);
-      };
-
       if (activeTool === 'hand') {
         const crop = state.crops?.[key];
         if (crop && crop.stage >= 3) {
+          const cropType = CROPS[crop.cropId];
+          const sellPrice = cropType?.sellPrice ?? 10;
           bridge.updateState(s => {
             if (s.crops[key]) {
               delete s.crops[key];
             }
+            s.coins = (s.coins || 0) + sellPrice;
+            s.xp = (s.xp || 0) + 20;
+            if (s.xp >= s.level * 200) {
+              s.xp -= s.level * 200;
+              s.level += 1;
+            }
           });
           return;
         }
-        moveToClick();
+        moveToClick(worldX, worldZ);
       } else if (activeTool === 'hoe') {
-        moveToClick();
+        if (isInFarmPlot(gx, gz)) {
+          bridge.updateState(s => {
+            s.tilledTiles = s.tilledTiles || {};
+            if (!s.tilledTiles[key]) {
+              s.tilledTiles[key] = { watered: false };
+            }
+          });
+          return;
+        }
+        moveToClick(worldX, worldZ);
       } else if (activeTool === 'water_can') {
-        if (state.crops?.[key] && !state.crops[key].watered) {
+        const tilledTiles = state.tilledTiles || {};
+        if (tilledTiles[key]) {
+          bridge.updateState(s => {
+            if (s.tilledTiles[key]) {
+              s.tilledTiles[key] = { ...s.tilledTiles[key], watered: true };
+            }
+          });
+          return;
+        }
+        const crop = state.crops?.[key];
+        if (crop && !crop.watered) {
           bridge.updateState(s => {
             if (s.crops[key]) {
               s.crops[key] = { ...s.crops[key], watered: true };
@@ -68,7 +106,7 @@ export function Interaction({ activeTool }: { activeTool: string }) {
           });
           return;
         }
-        moveToClick();
+        moveToClick(worldX, worldZ);
       } else if (activeTool === 'axe' || activeTool === 'pickaxe') {
         const clearedKey = `${gx},${gz}`;
         const cleared = state.clearedObjects || [];
@@ -78,34 +116,45 @@ export function Interaction({ activeTool }: { activeTool: string }) {
           });
           return;
         }
-        moveToClick();
+        moveToClick(worldX, worldZ);
       } else if (activeTool.endsWith('_seeds')) {
         const cropId = activeTool.replace('_seeds', '');
-        if (!state.crops?.[key]) {
-          const seedItem = state.inventory.find(i => i.id === activeTool);
-          if (seedItem && seedItem.count > 0) {
-            bridge.updateState(s => {
-              s.crops[key] = {
-                cropId,
-                stage: 0,
-                watered: false,
-                plantedAt: (s.day - 1) * 1440 + s.hour * 60 + s.minute,
-                lastWateredAt: 0,
-              };
-              s.inventory = s.inventory.map(i =>
-                i.id === activeTool ? { ...i, count: i.count - 1 } : i
-              ).filter(i => i.count > 0);
-            });
+        const tilledTiles = state.tilledTiles || {};
+        if (!tilledTiles[key]) {
+          moveToClick(worldX, worldZ);
+          return;
+        }
+        if (state.crops?.[key]) {
+          moveToClick(worldX, worldZ);
+          return;
+        }
+        const seedItem = state.inventory.find(i => i.id === activeTool);
+        if (seedItem && seedItem.count > 0) {
+          const cropDef = CROPS[cropId];
+          if (cropDef && state.level < cropDef.level) {
             return;
           }
+          bridge.updateState(s => {
+            s.crops[key] = {
+              cropId,
+              stage: 0,
+              watered: false,
+              plantedAt: (s.day - 1) * 1440 + s.hour * 60 + s.minute,
+              lastWateredAt: 0,
+            };
+            s.inventory = s.inventory.map(i =>
+              i.id === activeTool ? { ...i, count: i.count - 1 } : i
+            ).filter(i => i.count > 0);
+          });
+          return;
         }
-        moveToClick();
+        moveToClick(worldX, worldZ);
       }
     };
 
     gl.domElement.addEventListener('click', onClick);
     return () => gl.domElement.removeEventListener('click', onClick);
-  }, [activeTool, camera, gl]);
+  }, [activeTool, camera, gl, moveToClick]);
 
   return null;
 }

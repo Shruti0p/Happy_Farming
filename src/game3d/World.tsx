@@ -9,6 +9,7 @@ import { Animals } from './animals/Animals';
 import { GameCamera } from './camera/GameCamera';
 import { Lighting, Sky } from './effects/Lighting';
 import { Weather } from './effects/Weather';
+import { Clouds } from './effects/Clouds';
 import { Interaction } from './physics/Interaction';
 import { Environment } from '@react-three/drei';
 import { MAP_SIZE, MAP_CENTER, TILE_SIZE } from './types';
@@ -199,7 +200,8 @@ export function World({ gameState, onPlayerMove, activeTool = 'hand' }: WorldPro
       <Environment preset="park" />
       <fog attach="fog" args={[0x87CEEB, 40, 120]} />
 
-      <Terrain tiles={tiles} playerX={playerPos[0]} playerZ={playerPos[2]} />
+      <Terrain tiles={tiles} playerX={playerPos[0]} playerZ={playerPos[2]} tilledTiles={gameState.tilledTiles} />
+      <Clouds />
       <WorldObjects objects={[...objects, ...structures]} />
       <Buildings buildings={buildingsList} />
 
