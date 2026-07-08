@@ -9,9 +9,8 @@ import { Animals } from './animals/Animals';
 import { GameCamera } from './camera/GameCamera';
 import { Lighting, Sky } from './effects/Lighting';
 import { Weather } from './effects/Weather';
-import { Clouds } from './effects/Clouds';
-import { Mountains } from './objects/Mountains';
 import { Interaction } from './physics/Interaction';
+import { Environment } from '@react-three/drei';
 import { MAP_SIZE, MAP_CENTER, TILE_SIZE } from './types';
 import type { SavedGameState } from '../game/types';
 import type { WorldTile, Object3DData, Building3DData } from './types';
@@ -197,8 +196,7 @@ export function World({ gameState, onPlayerMove, activeTool = 'hand' }: WorldPro
         isSnowing={false}
       />
       <Weather weather={gameState.weather.toLowerCase()} />
-      <Clouds />
-      <Mountains />
+      <Environment preset="forest" />
 
       <Terrain tiles={tiles} playerX={playerPos[0]} playerZ={playerPos[2]} />
       <WorldObjects objects={[...objects, ...structures]} />

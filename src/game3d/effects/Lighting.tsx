@@ -1,6 +1,7 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef } from 'react';
 import * as THREE from 'three';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
+import { Sky as DreiSky } from '@react-three/drei';
 
 const DAY_DURATION = 120;
 
@@ -69,10 +70,6 @@ export function Lighting({ hour, minute, isRaining, isSnowing }: LightingProps) 
   const ambientRef = useRef<THREE.AmbientLight>(null!);
   const hemiRef = useRef<THREE.HemisphereLight>(null!);
 
-  const sunAngle = getSunAngle(hour, minute);
-  const sunColor = getSunColor(hour, minute);
-  const ambientIntensity = getAmbientIntensity(hour, minute);
-
   const weatherDim = isRaining || isSnowing ? 0.6 : 1.0;
 
   useFrame(() => {
@@ -111,7 +108,7 @@ export function Lighting({ hour, minute, isRaining, isSnowing }: LightingProps) 
 
   return (
     <>
-      <ambientLight ref={ambientRef} intensity={ambientIntensity * 0.8 * weatherDim} color={0xB0C4DE} />
+      <ambientLight ref={ambientRef} intensity={getAmbientIntensity(hour, minute) * 0.8 * weatherDim} color={0xB0C4DE} />
       <hemisphereLight
         ref={hemiRef}
         args={[0x87CEEB, 0x5A8B4A, 0.6 * weatherDim]}
@@ -135,19 +132,35 @@ export function Lighting({ hour, minute, isRaining, isSnowing }: LightingProps) 
 }
 
 export function Sky({ hour, minute, isRaining, isSnowing }: LightingProps) {
-  const { scene } = useThree();
-  const color = useMemo(() => new THREE.Color(0x87CEEB), []);
+  const angle = getSunAngle(hour, minute);
+  const dist = 30;
 
-  useFrame(() => {
-    const ambIntensity = getAmbientIntensity(hour, minute);
-    const wd = isRaining || isSnowing ? 0.6 : 1.0;
-    color.setHSL(
-      0.58 - ambIntensity * 0.06,
-      0.15 + ambIntensity * 0.25,
-      (ambIntensity * 0.5 + 0.3) * wd,
-    );
-    scene.background = color;
-  });
+  const sunPosition: [number, number, number] = [
+    Math.cos(angle) * dist,
+    Math.sin(angle) * dist + 5,
+    Math.cos(angle) * dist * 0.5,
+  ];
 
-  return null;
+  const ambIntensity = getAmbientIntensity(hour, minute);
+  const wd = isRaining || isSnowing ? 0.6 : 1.0;
+  const isNight = ambIntensity < 0.3;
+
+  const turbidity = isNight ? 20 : 10 - ambIntensity * 5;
+  const rayleigh = isNight ? 4 : 0.5 + ambIntensity * 2;
+  const mieCoefficient = isNight ? 0.1 : 0.005;
+  const mieDirectionalG = isNight ? 0.3 : 0.82;
+
+  if (isNight) {
+    return null;
+  }
+
+  return (
+    <DreiSky
+      sunPosition={sunPosition}
+      turbidity={turbidity}
+      rayleigh={rayleigh}
+      mieCoefficient={mieCoefficient}
+      mieDirectionalG={mieDirectionalG}
+    />
+  );
 }
