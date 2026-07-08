@@ -32,11 +32,14 @@ function isOnFencePerimeter(x: number, z: number): boolean {
   return false;
 }
 
+let _waterFrame = 0;
 function WaterTile({ x, z }: { x: number; z: number }) {
   const matRef = useRef<THREE.MeshStandardMaterial>(null!);
   const meshRef = useRef<THREE.Mesh>(null!);
 
   useFrame(() => {
+    _waterFrame++;
+    if (_waterFrame % 3 !== 0) return;
     if (matRef.current) {
       matRef.current.opacity = 0.8 + Math.sin(Date.now() * 0.002 + x * 3 + z * 5) * 0.05;
     }
@@ -53,10 +56,13 @@ function WaterTile({ x, z }: { x: number; z: number }) {
   );
 }
 
+let _tilledFrame = 0;
 function TilledTile({ x, z, watered }: { x: number; z: number; watered: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null!);
 
   useFrame(() => {
+    _tilledFrame++;
+    if (_tilledFrame % 3 !== 0) return;
     if (meshRef.current && watered) {
       meshRef.current.position.y = 0.02 + Math.sin(Date.now() * 0.003 + x * 4 + z * 2) * 0.002;
     }

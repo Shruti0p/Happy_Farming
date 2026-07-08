@@ -270,8 +270,13 @@ function Animal({ type, x, z }: AnimalProps) {
   const isFlock = FLOCK_TYPES.includes(type as any);
   const isAnimated = getIsAnimated(type);
 
+  const skipCounter = useRef(0);
+
   useFrame((_, delta) => {
     if (!ref.current || !innerRef.current) return;
+
+    skipCounter.current++;
+    if (skipCounter.current % 2 !== 0) return;
 
     const px = (window as any).__playerPos?.x ?? 50;
     const pz = (window as any).__playerPos?.z ?? 50;

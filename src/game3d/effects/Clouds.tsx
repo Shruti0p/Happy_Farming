@@ -7,6 +7,7 @@ const CLOUD_COUNT = 8;
 
 function CloudCluster({ seed, baseX, baseZ }: { seed: number; baseX: number; baseZ: number }) {
   const groupRef = useRef<THREE.Group>(null!);
+  const frameCounter = useRef(0);
   const speed = 0.02 + (seed % 5) * 0.01;
   const startX = baseX;
 
@@ -29,6 +30,8 @@ function CloudCluster({ seed, baseX, baseZ }: { seed: number; baseX: number; bas
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
+    frameCounter.current++;
+    if (frameCounter.current % 2 !== 0) return;
     groupRef.current.position.x += speed * delta;
     if (groupRef.current.position.x > MAP_SIZE + 20) {
       groupRef.current.position.x = -20;

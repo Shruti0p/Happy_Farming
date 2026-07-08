@@ -10,6 +10,7 @@ function BirdV({ seed }: { seed: number }) {
   const rightWingRef = useRef<THREE.Mesh>(null!);
 
   const wingPhase = useRef(seed * 3 + 1);
+  const frameCounter = useRef(0);
 
   const speed = 0.6 + (seed % 4) * 0.3;
   const radius = 10 + (seed % 6) * 5;
@@ -32,6 +33,16 @@ function BirdV({ seed }: { seed: number }) {
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
+
+    frameCounter.current++;
+    if (frameCounter.current % 2 !== 0) {
+      wingPhase.current += delta * 6;
+      const a = Math.sin(wingPhase.current) * 0.5 + 0.2;
+      if (leftWingRef.current) leftWingRef.current.rotation.z = a;
+      if (rightWingRef.current) rightWingRef.current.rotation.z = -a;
+      return;
+    }
+
     const t = performance.now() / 1000 * speed * dir + offset;
     groupRef.current.position.x = cx + Math.cos(t) * radius;
     groupRef.current.position.z = cz + Math.sin(t) * radius;

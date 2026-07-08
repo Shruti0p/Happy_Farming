@@ -23,6 +23,7 @@ export function GameCanvas({ gameState, onPlayerMove, activeTool }: GameCanvasPr
       <LoadingScreen />
       <Canvas
         shadows
+        dpr={[1, 1]}
         gl={{
           antialias: true,
           toneMapping: 3,

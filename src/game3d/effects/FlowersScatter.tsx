@@ -10,7 +10,7 @@ const FLOWER_PATHS = [
   '/models/stylized/Flower_4_Group.gltf',
 ];
 
-const FLOWERS_PER_TYPE = 80;
+const FLOWERS_PER_TYPE = 30;
 
 const FARM_X = 40, FARM_Z = 58, FARM_W = 20, FARM_H = 20;
 
@@ -92,8 +92,6 @@ function FlowerType({ typeIndex }: { typeIndex: number }) {
     <instancedMesh
       ref={meshRef}
       args={[geometry, material, positions.length / 3]}
-      castShadow
-      receiveShadow
     />
   );
 }
