@@ -1,9 +1,10 @@
 import { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
+
 const BIRD_COUNT = 15;
 
-function VBird({ seed }: { seed: number }) {
+function BirdV({ seed }: { seed: number }) {
   const groupRef = useRef<THREE.Group>(null!);
   const leftWingRef = useRef<THREE.Mesh>(null!);
   const rightWingRef = useRef<THREE.Mesh>(null!);
@@ -18,7 +19,16 @@ function VBird({ seed }: { seed: number }) {
   const offset = seed * 2.3;
   const dir = seed % 2 === 0 ? 1 : -1;
 
-  const shade = 0.1 + (seed % 3) * 0.1;
+  const shade = 0.08 + (seed % 3) * 0.08;
+
+  const wingShape = useMemo(() => {
+    const s = new THREE.Shape();
+    s.moveTo(0, 0);
+    s.lineTo(0.8, 0.3);
+    s.lineTo(1.0, 0);
+    s.closePath();
+    return s;
+  }, []);
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
@@ -29,29 +39,36 @@ function VBird({ seed }: { seed: number }) {
     groupRef.current.rotation.y = -t + Math.PI / 2;
 
     wingPhase.current += delta * 6;
-    const a = Math.sin(wingPhase.current) * 0.5 + 0.3;
+    const a = Math.sin(wingPhase.current) * 0.5 + 0.2;
     if (leftWingRef.current) leftWingRef.current.rotation.z = a;
     if (rightWingRef.current) rightWingRef.current.rotation.z = -a;
   });
 
-  const wingShape = useMemo(() => {
-    const s = new THREE.Shape();
-    s.moveTo(0, 0);
-    s.lineTo(1.2, 0.35);
-    s.lineTo(1.4, 0);
-    s.closePath();
-    return s;
-  }, []);
-
   return (
-    <group ref={groupRef} scale={1.5}>
-      <mesh ref={leftWingRef} position={[0, 0, 0]} rotation={[0, 0, 0.3]}>
+    <group ref={groupRef} scale={2.0}>
+      <mesh ref={leftWingRef} position={[-0.1, 0, 0]} rotation={[0.1, 0.05, 0.3]}>
         <shapeGeometry args={[wingShape]} />
         <meshBasicMaterial color={new THREE.Color(shade, shade, shade)} side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
-      <mesh ref={rightWingRef} position={[0, 0, 0]} rotation={[0, 0, -0.3]}>
+      <mesh ref={rightWingRef} position={[0.1, 0, 0]} rotation={[0.1, -0.05, -0.3]}>
         <shapeGeometry args={[wingShape]} />
         <meshBasicMaterial color={new THREE.Color(shade, shade, shade)} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+      <mesh position={[0, 0.02, -0.05]} rotation={[0.1, 0, 0]}>
+        <planeGeometry args={[0.5, 0.15]} />
+        <meshBasicMaterial color={new THREE.Color(shade, shade, shade)} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+      <mesh position={[0, 0, -0.18]} rotation={[0.1, 0, 0]}>
+        <planeGeometry args={[0.15, 0.1]} />
+        <meshBasicMaterial color={new THREE.Color(shade, shade, shade)} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+      <mesh position={[0, 0.06, 0.05]}>
+        <circleGeometry args={[0.06, 6]} />
+        <meshBasicMaterial color={new THREE.Color(shade, shade, shade)} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+      <mesh position={[0, 0.07, 0.1]} rotation={[0, 0, 0]}>
+        <coneGeometry args={[0.01, 0.08, 4]} />
+        <meshBasicMaterial color={0x444444} depthWrite={false} />
       </mesh>
     </group>
   );
@@ -65,7 +82,7 @@ export function Birds() {
   return (
     <group>
       {seeds.map((s, i) => (
-        <VBird key={i} seed={s} />
+        <BirdV key={i} seed={s} />
       ))}
     </group>
   );

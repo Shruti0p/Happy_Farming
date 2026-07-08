@@ -190,12 +190,12 @@ export function Terrain({ tiles, tilledTiles }: TerrainProps) {
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[MAP_SIZE / 2, -0.15, MAP_SIZE / 2]} receiveShadow>
         <planeGeometry args={[MAP_SIZE * 1.5, MAP_SIZE * 1.5]} />
-        <meshStandardMaterial color={0x5A8B4A} roughness={1} />
+        <meshStandardMaterial color={0x4A7A3A} roughness={1} />
       </mesh>
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[FARM_PLOT_X + FARM_PLOT_W / 2, -0.12, FARM_PLOT_Z + FARM_PLOT_H / 2]} receiveShadow>
         <planeGeometry args={[FARM_PLOT_W, FARM_PLOT_H]} />
-        <meshStandardMaterial color={0x6B4A2E} roughness={1} />
+        <meshStandardMaterial color={0x5C3A1E} roughness={1} />
       </mesh>
 
       {waterPositions.map(p => (
