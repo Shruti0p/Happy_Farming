@@ -378,10 +378,10 @@ function seedRandom(seed: number): () => number {
 }
 
 function generateWildAnimals(gameStateAnimals: { id: string; type: string; name: string; x: number; z: number }[]) {
-  const wildTypes = ['chicken', 'duck', 'rabbit', 'sheep', 'pig'];
+  const wildTypes = ['chicken', 'duck', 'rabbit', 'sheep', 'pig', 'cat', 'dog', 'goat'];
   const rng = seedRandom(42);
   const wild: AnimalProps[] = [];
-  const count = 8;
+  const count = 20;
 
   const existingKeys = new Set(gameStateAnimals.map(a => `${Math.round(a.x)},${Math.round(a.z)}`));
 
@@ -389,11 +389,16 @@ function generateWildAnimals(gameStateAnimals: { id: string; type: string; name:
     let attempts = 0;
     let wx: number, wz: number, key: string;
     do {
-      wx = 10 + Math.floor(rng() * (MAP_SIZE - 20));
-      wz = 10 + Math.floor(rng() * (MAP_SIZE - 20));
+      if (i < 8) {
+        wx = 30 + Math.floor(rng() * 40);
+        wz = 30 + Math.floor(rng() * 40);
+      } else {
+        wx = 5 + Math.floor(rng() * (MAP_SIZE - 10));
+        wz = 5 + Math.floor(rng() * (MAP_SIZE - 10));
+      }
       key = `${wx},${wz}`;
       attempts++;
-    } while ((existingKeys.has(key) || (wx >= 38 && wx < 62 && wz >= 56 && wz < 80)) && attempts < 20);
+    } while ((existingKeys.has(key) || (wx >= 38 && wx < 62 && wz >= 56 && wz < 80)) && attempts < 30);
 
     const type = wildTypes[Math.floor(rng() * wildTypes.length)];
     wild.push({

@@ -48,7 +48,12 @@ const DEFAULT_STATE = (): SavedGameState => {
     crops: {},
     tilledTiles: {},
     structures: {},
-    animals: [],
+    animals: [
+      { id: 'starter_rabbit', type: 'rabbit', name: 'Fluffy', fed: true, affection: 50, lastFedDay: 1, hasProduct: false, x: 46, y: 46 },
+      { id: 'starter_hen', type: 'chicken', name: 'Penny', fed: true, affection: 50, lastFedDay: 1, hasProduct: false, x: 53, y: 46 },
+      { id: 'starter_cat', type: 'cat', name: 'Milo', fed: true, affection: 50, lastFedDay: 1, hasProduct: false, x: 48, y: 48 },
+      { id: 'starter_dog', type: 'dog', name: 'Buddy', fed: true, affection: 50, lastFedDay: 1, hasProduct: false, x: 52, y: 48 },
+    ],
     clearedObjects: [],
     buildings: {
       barn: { id: 'barn', level: 1, name: 'Red Barn' },
