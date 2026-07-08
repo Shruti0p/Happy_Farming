@@ -1,71 +1,58 @@
 import { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
-import { MAP_SIZE } from '../types';
+const BIRD_COUNT = 15;
 
-const BIRD_COUNT = 10;
-
-function AnimatedBird({ seed }: { seed: number }) {
+function VBird({ seed }: { seed: number }) {
   const groupRef = useRef<THREE.Group>(null!);
-  const leftWingRef = useRef<THREE.Group>(null!);
-  const rightWingRef = useRef<THREE.Group>(null!);
+  const leftWingRef = useRef<THREE.Mesh>(null!);
+  const rightWingRef = useRef<THREE.Mesh>(null!);
 
-  const wingPhase = useRef(seed * 3);
+  const wingPhase = useRef(seed * 3 + 1);
 
-  const speed = 0.5 + (seed % 3) * 0.3;
-  const radius = 5 + (seed % 5) * 3;
-  const heightOffset = 7 + (seed % 5) * 2;
-  const centerX = 15 + (seed % 70);
-  const centerZ = 15 + (seed % 70);
-  const angleOffset = seed * 2.1;
-  const invert = seed % 2 === 0 ? 1 : -1;
+  const speed = 0.6 + (seed % 4) * 0.3;
+  const radius = 10 + (seed % 6) * 5;
+  const height = 18 + (seed % 7) * 2;
+  const cx = 15 + (seed % 70);
+  const cz = 15 + (seed % 70);
+  const offset = seed * 2.3;
+  const dir = seed % 2 === 0 ? 1 : -1;
 
-  const bodyColor = new THREE.Color().setHSL(0.05 + (seed % 8) * 0.02, 0.3, 0.35 + (seed % 4) * 0.08);
+  const shade = 0.1 + (seed % 3) * 0.1;
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
-    const t = performance.now() / 1000 * speed * invert + angleOffset;
-    groupRef.current.position.x = centerX + Math.cos(t) * radius;
-    groupRef.current.position.z = centerZ + Math.sin(t) * radius;
-    groupRef.current.position.y = heightOffset + Math.sin(t * 2) * 0.5;
+    const t = performance.now() / 1000 * speed * dir + offset;
+    groupRef.current.position.x = cx + Math.cos(t) * radius;
+    groupRef.current.position.z = cz + Math.sin(t) * radius;
+    groupRef.current.position.y = height + Math.sin(t * 1.3) * 1.5;
     groupRef.current.rotation.y = -t + Math.PI / 2;
 
-    wingPhase.current += delta * 10;
-    const wingAngle = Math.sin(wingPhase.current) * 0.8;
-    if (leftWingRef.current) leftWingRef.current.rotation.x = wingAngle;
-    if (rightWingRef.current) rightWingRef.current.rotation.x = -wingAngle;
+    wingPhase.current += delta * 6;
+    const a = Math.sin(wingPhase.current) * 0.5 + 0.3;
+    if (leftWingRef.current) leftWingRef.current.rotation.z = a;
+    if (rightWingRef.current) rightWingRef.current.rotation.z = -a;
   });
 
+  const wingShape = useMemo(() => {
+    const s = new THREE.Shape();
+    s.moveTo(0, 0);
+    s.lineTo(1.2, 0.35);
+    s.lineTo(1.4, 0);
+    s.closePath();
+    return s;
+  }, []);
+
   return (
-    <group ref={groupRef} scale={0.12}>
-      <mesh position={[0, 0, 0]} castShadow>
-        <capsuleGeometry args={[0.08, 0.2, 4, 6]} />
-        <meshStandardMaterial color={bodyColor} />
+    <group ref={groupRef} scale={1.5}>
+      <mesh ref={leftWingRef} position={[0, 0, 0]} rotation={[0, 0, 0.3]}>
+        <shapeGeometry args={[wingShape]} />
+        <meshBasicMaterial color={new THREE.Color(shade, shade, shade)} side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
-      <mesh position={[0, 0.2, 0.05]} castShadow>
-        <sphereGeometry args={[0.06, 6, 6]} />
-        <meshStandardMaterial color={bodyColor} />
+      <mesh ref={rightWingRef} position={[0, 0, 0]} rotation={[0, 0, -0.3]}>
+        <shapeGeometry args={[wingShape]} />
+        <meshBasicMaterial color={new THREE.Color(shade, shade, shade)} side={THREE.DoubleSide} depthWrite={false} />
       </mesh>
-      <mesh position={[0, 0.22, 0.1]}>
-        <coneGeometry args={[0.015, 0.06, 4]} />
-        <meshStandardMaterial color={0xFF6600} />
-      </mesh>
-      <mesh position={[0, -0.02, -0.18]}>
-        <coneGeometry args={[0.02, 0.08, 4]} />
-        <meshStandardMaterial color={bodyColor} />
-      </mesh>
-      <group ref={leftWingRef} position={[-0.12, 0.08, 0]}>
-        <mesh>
-          <planeGeometry args={[0.35, 0.1]} />
-          <meshStandardMaterial color={bodyColor} side={THREE.DoubleSide} />
-        </mesh>
-      </group>
-      <group ref={rightWingRef} position={[0.12, 0.08, 0]}>
-        <mesh>
-          <planeGeometry args={[0.35, 0.1]} />
-          <meshStandardMaterial color={bodyColor} side={THREE.DoubleSide} />
-        </mesh>
-      </group>
     </group>
   );
 }
@@ -78,7 +65,7 @@ export function Birds() {
   return (
     <group>
       {seeds.map((s, i) => (
-        <AnimatedBird key={i} seed={s} />
+        <VBird key={i} seed={s} />
       ))}
     </group>
   );
