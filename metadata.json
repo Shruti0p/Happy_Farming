@@ -1,0 +1,6 @@
+{
+  "name": "2D Farming Simulation Game",
+  "description": "A beautiful and fully interactive 2D farming simulation game with seeded world generation, crop cultivation, custom building, animal husbandry, and real-time clock mechanics, powered by Phaser 3 and React.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

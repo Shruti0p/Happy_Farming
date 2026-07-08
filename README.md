@@ -1,30 +1,20 @@
-# FarmVerse
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
+</div>
 
-A simple 2D top-down farming game built with HTML, CSS, and JavaScript.
+# Run and deploy your AI Studio app
 
-## Features
+This contains everything you need to run your app locally.
 
-- Player farmer game UI
-- Farm map with 6 crop plots
-- Coins, XP, and level system
-- Click/tap planting and harvesting
-- Responsive layout for desktop and mobile
-- Save progress in `localStorage`
+View your app in AI Studio: https://ai.studio/apps/a5bf5868-997f-46ff-b2dd-8dad3e1c8e02
 
-## How to play
+## Run Locally
 
-1. Open `index.html` in a browser.
-- Use the seed shop to buy seeds for crops unlocked by level.
-- Buy animals once they unlock and keep them in the animal area.
-- Process products in buildings after unlocking them by level.
-- Use the bakery, dairy, textile workshop, and sugar mill to create higher-value goods.
-- Complete NPC orders for extra coins and XP.
-- Progress is autosaved.
+**Prerequisites:**  Node.js
 
-## Controls
 
-- Click or tap a seed in the shop to select it.
-- Click or tap an empty plot to plant the selected seed.
-- Click or tap a ready plot to harvest it.
-- Click market buttons to sell harvested crops.
-- Use the reset button to clear saved progress.
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
